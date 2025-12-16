@@ -1,1 +1,48 @@
 # TODO: Implementar el docker-compose.yml
+version: '3.8'
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: demobase-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: demobase
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: always
+    networks:
+      - demobase-network
+
+
+  app:
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: demobase-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: demobase
+      MYSQL_USER: demobase
+      MYSQL_PASSWORD: demobase
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: true
+      SPRING_SQL_INIT_MODE: always
+    restart: on-failure
+    networks:
+      - demobase-network
+
+volumes:
+  mysql_data:
+
+networks:
+  demobase-network:
+    driver: bridge
